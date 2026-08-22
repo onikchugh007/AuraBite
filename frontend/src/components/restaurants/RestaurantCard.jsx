@@ -74,7 +74,9 @@ const RestaurantCard = ({ restaurant, index }) => {
               </h3>
               <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/20 text-green-400">
                 <FiStar className="w-3 h-3 fill-current" />
-                <span className="text-sm font-bold">{restaurant.rating || '4.5'}</span>
+                <span className="text-sm font-bold">
+                  {typeof restaurant.rating === 'object' ? (restaurant.rating?.average || '4.5') : (restaurant.rating || '4.5')}
+                </span>
               </div>
             </div>
 

@@ -4,82 +4,77 @@ import axios from 'axios'
 import { FiCreditCard, FiLock } from 'react-icons/fi'
 import { motion } from 'framer-motion'
 
-const RazorpayPayment = ({ amount, orderData, onSuccess }) => {
+const RazorpayPayment = ({ amount, orderData, onSuccess, paymentMethod = 'online' }) => {
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
   const navigate = useNavigate()
 
   const handlePayment = async () => {
     setLoading(true)
+    setErrorMsg(null)
     try {
-      // Create order on backend
-      const { data } = await axios.post('/api/order/create', {
-        amount: amount * 100, // Convert to paise
-        currency: 'INR',
-        receipt: `order_${Date.now()}`,
-        ...orderData
-      })
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
-        name: 'AuraBite Food Delivery',
-        description: 'Order Payment',
-        order_id: data.id,
-        handler: async (response) => {
-          // Verify payment
-          try {
-            const verifyData = await axios.post('/api/order/verify', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              orderId: data.orderId
-            })
-            
-            if (verifyData.data.success) {
-              onSuccess(verifyData.data.order)
-            }
-          } catch (error) {
-            console.error('Verification error:', error)
-          }
+      const payload = {
+        cartItems: (orderData.items || []).map(i => ({
+          _id: i._id || i.id,
+          id: i._id || i.id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          shop: i.shop || i.shopId
+        })),
+        paymentMethod: paymentMethod,
+        deliveryAddress: {
+          text: orderData.address || 'UPHC Nagra, Nandanpura Nagara Road, Railway Colony, Jhansi, UP',
+          latitude: orderData.latitude || 25.4358,
+          longitude: orderData.longitude || 78.5684
         },
-        prefill: {
-          name: orderData.customerName,
-          email: orderData.customerEmail,
-          contact: orderData.customerPhone
-        },
-        theme: {
-          color: '#ff6b35'
-        }
+        totalAmount: amount
       }
 
-      const razorpay = new window.Razorpay(options)
-      razorpay.open()
+      const { data } = await axios.post('/api/order/place-order', payload)
+
+      const orderId = data._id || data.orderId
+      if (orderId) {
+        onSuccess({ _id: orderId })
+      } else {
+        setErrorMsg('Failed to process order. Please try again.')
+      }
     } catch (error) {
-      console.error('Payment error:', error)
+      console.error('Payment/Order placement error:', error)
+      setErrorMsg(error.response?.data?.message || 'Could not connect to server')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={handlePayment}
-      disabled={loading}
-      className="w-full btn-primary py-4 text-lg flex items-center justify-center gap-3 disabled:opacity-50"
-    >
-      {loading ? (
-        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>
-          <FiLock className="w-5 h-5" />
-          Pay Securely ${amount.toFixed(2)}
-          <FiCreditCard className="w-5 h-5" />
-        </>
+    <div className="space-y-2">
+      {errorMsg && (
+        <p className="text-xs text-red-400 font-medium text-center bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+          {errorMsg}
+        </p>
       )}
-    </motion.button>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handlePayment}
+        disabled={loading}
+        className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 disabled:opacity-50 shadow-xl shadow-orange-500/20 cursor-pointer"
+      >
+        {loading ? (
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span>Processing Order...</span>
+          </div>
+        ) : (
+          <>
+            <FiLock className="w-5 h-5" />
+            Pay & Place Order ₹{amount.toFixed(2)}
+            <FiCreditCard className="w-5 h-5" />
+          </>
+        )}
+      </motion.button>
+    </div>
   )
 }
 

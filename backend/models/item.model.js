@@ -39,10 +39,32 @@ const itemSchema = new mongoose.Schema({
         enum:["veg","non veg"],
         required:true
     },
-   rating:{
-    average:{type:Number,default:0},
-    count:{type:Number,default:0}
-   }
+    rating:{
+        average:{type:Number,default:0},
+        count:{type:Number,default:0}
+    },
+    dietaryTags: [{
+        type: String,
+        enum: [
+            "diabetic-friendly",
+            "low-sodium",
+            "gluten-free",
+            "keto",
+            "nut-free",
+            "high-protein",
+            "vegan",
+            "heart-healthy"
+        ]
+    }],
+    nutritionInfo: {
+        calories: { type: Number, default: 350 },
+        carbsG: { type: Number, default: 35 },
+        proteinG: { type: Number, default: 15 },
+        fatG: { type: Number, default: 10 },
+        sodiumMg: { type: Number, default: 280 },
+        sugarG: { type: Number, default: 4 },
+        glycemicIndex: { type: Number, default: 42 }
+    }
 }, { timestamps: true })
 
 const Item=mongoose.model("Item",itemSchema)

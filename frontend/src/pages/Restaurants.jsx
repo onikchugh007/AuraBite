@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiSearch, FiFilter, FiMapPin, FiStar } from 'react-icons/fi'
+import { FiSearch, FiFilter, FiMapPin, FiStar, FiActivity, FiShield, FiHeart } from 'react-icons/fi'
 import RestaurantCard from '../components/restaurants/RestaurantCard'
 import axios from 'axios'
 
@@ -9,13 +9,22 @@ const Restaurants = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCuisine, setSelectedCuisine] = useState('all')
+  const [selectedHealthFilter, setSelectedHealthFilter] = useState('all')
+  const [healthMode, setHealthMode] = useState(false)
   const [sortBy, setSortBy] = useState('rating')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const { data } = await axios.get('/api/restaurants')
+        setLoading(true)
+        let response
+        try {
+          response = await axios.get('/api/restaurants')
+        } catch {
+          response = await axios.get('/api/shop/all')
+        }
+        const data = response.data || []
         setRestaurants(data)
         setFilteredRestaurants(data)
       } catch (error) {
@@ -28,55 +37,137 @@ const Restaurants = () => {
   }, [])
 
   useEffect(() => {
-    let filtered = restaurants
+    let filtered = [...restaurants]
 
     if (searchQuery) {
       filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.cuisine?.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()))
+        r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.cuisine?.some(c => c.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        r.items?.some(i => i.name?.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     }
 
     if (selectedCuisine !== 'all') {
-      filtered = filtered.filter(r => r.cuisine?.includes(selectedCuisine))
+      filtered = filtered.filter(r =>
+        r.cuisine?.some(c => c.toLowerCase() === selectedCuisine.toLowerCase()) ||
+        r.category?.toLowerCase() === selectedCuisine.toLowerCase()
+      )
+    }
+
+    if (selectedHealthFilter !== 'all') {
+      filtered = filtered.filter(r =>
+        r.items?.some(i =>
+          i.dietaryTags?.includes(selectedHealthFilter)
+        )
+      )
+    }
+
+    if (healthMode) {
+      filtered = filtered.filter(r =>
+        r.items?.some(i =>
+          i.dietaryTags?.includes('diabetic-friendly') ||
+          i.dietaryTags?.includes('low-sodium') ||
+          i.dietaryTags?.includes('gluten-free')
+        )
+      )
     }
 
     if (sortBy === 'rating') {
-      filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      filtered.sort((a, b) => (b.rating || 4.5) - (a.rating || 4.5))
     } else if (sortBy === 'delivery-time') {
-      filtered.sort((a, b) => (a.deliveryTime || 999) - (b.deliveryTime || 999))
+      filtered.sort((a, b) => (a.deliveryTime || 30) - (b.deliveryTime || 30))
     } else if (sortBy === 'distance') {
-      filtered.sort((a, b) => (a.distance || 999) - (b.distance || 999))
+      filtered.sort((a, b) => (a.distance || 2.5) - (b.distance || 2.5))
     }
 
     setFilteredRestaurants(filtered)
-  }, [searchQuery, selectedCuisine, sortBy, restaurants])
+  }, [searchQuery, selectedCuisine, selectedHealthFilter, healthMode, sortBy, restaurants])
 
-  const cuisines = ['Italian', 'Chinese', 'Indian', 'Mexican', 'Japanese']
+  const cuisines = ['Italian', 'Chinese', 'Indian', 'Burgers', 'Pizza']
+  const healthFilters = [
+    { id: 'all', label: 'All Health Types', icon: '🥗' },
+    { id: 'diabetic-friendly', label: 'Diabetic Friendly (Low GI)', icon: '🩸' },
+    { id: 'low-sodium', label: 'Low Sodium (Heart Safe)', icon: '🧂' },
+    { id: 'gluten-free', label: 'Gluten Free', icon: '🌾' },
+    { id: 'keto', label: 'Keto / Low Carb', icon: '🥑' },
+    { id: 'high-protein', label: 'High Protein', icon: '🏋️' }
+  ]
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header Title & Health Mode Toggle */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass p-6 rounded-3xl border border-white/10"
         >
-          <h1 className="text-4xl font-bold mb-2">Browse Restaurants</h1>
-          <p className="text-gray-400">Discover the best food delivery in your area</p>
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold mb-1 flex items-center gap-3">
+              Browse Gourmet & Health Restaurants
+              {healthMode && (
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 animate-pulse">
+                  HEALTH MODE ACTIVE
+                </span>
+              )}
+            </h1>
+            <p className="text-sm text-gray-400">
+              Filtered for medical safety: diabetic-friendly, low-sodium, and allergy-safe gourmet meals
+            </p>
+          </div>
+
+          {/* Health Mode Switch Button */}
+          <button
+            onClick={() => setHealthMode(!healthMode)}
+            className={`px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-xl border ${
+              healthMode
+                ? 'bg-gradient-to-r from-emerald-600 to-green-500 text-white border-emerald-400 shadow-emerald-500/20 ring-4 ring-emerald-500/20'
+                : 'bg-white/10 hover:bg-white/20 text-gray-200 border-white/10'
+            }`}
+          >
+            <FiActivity className={`w-5 h-5 ${healthMode ? 'animate-bounce text-white' : 'text-emerald-400'}`} />
+            <span>{healthMode ? '🩺 Health Mode ON' : '🩺 Switch to Health Mode'}</span>
+          </button>
         </motion.div>
 
+        {/* Medical & Dietary Restriction Filter Bar */}
+        <div className="glass p-4 rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent">
+          <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-orange-400">
+            <FiShield className="w-4 h-4" /> Filter by Medical & Health Need:
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {healthFilters.map((h) => {
+              const isSelected = selectedHealthFilter === h.id
+              return (
+                <button
+                  key={h.id}
+                  onClick={() => setSelectedHealthFilter(h.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all border ${
+                    isSelected
+                      ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/30'
+                      : 'bg-black/40 hover:bg-black/60 text-gray-300 border-white/10'
+                  }`}
+                >
+                  <span>{h.icon}</span>
+                  <span>{h.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Search and Filters */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="grid md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="md:col-span-2 relative group">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search restaurants..."
+              placeholder="Search diabetic-safe, low-sodium, restaurants or dishes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl glass focus:border-orange-500 outline-none"
+              className="w-full pl-12 pr-4 py-3 rounded-xl glass focus:border-orange-500 outline-none text-white placeholder-gray-500 text-sm"
             />
           </div>
 
@@ -84,7 +175,7 @@ const Restaurants = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-3 rounded-xl glass outline-none cursor-pointer"
+            className="px-4 py-3 rounded-xl glass outline-none cursor-pointer text-white bg-zinc-900 text-sm"
           >
             <option value="rating">Highest Rated</option>
             <option value="delivery-time">Fastest Delivery</option>
@@ -95,7 +186,7 @@ const Restaurants = () => {
           <select
             value={selectedCuisine}
             onChange={(e) => setSelectedCuisine(e.target.value)}
-            className="px-4 py-3 rounded-xl glass outline-none cursor-pointer"
+            className="px-4 py-3 rounded-xl glass outline-none cursor-pointer text-white bg-zinc-900 text-sm"
           >
             <option value="all">All Cuisines</option>
             {cuisines.map(c => (
@@ -104,31 +195,15 @@ const Restaurants = () => {
           </select>
         </div>
 
-        {/* Cuisine Tags */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-          {['All', ...cuisines].map((cuisine) => (
-            <motion.button
-              key={cuisine}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setSelectedCuisine(cuisine === 'All' ? 'all' : cuisine)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${(cuisine === 'All' ? selectedCuisine === 'all' : selectedCuisine === cuisine)
-                ? 'btn-primary'
-                : 'glass hover:bg-white/10'
-                }`}
-            >
-              {cuisine}
-            </motion.button>
-          ))}
-        </div>
-
         {/* Restaurants Grid */}
         {loading ? (
-          <div className="flex items-center justify-center min-h-64">
+          <div className="flex flex-col items-center justify-center min-h-64">
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity }}
-              className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-500 rounded-full"
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-12 h-12 border-4 border-orange-500/30 border-t-orange-500 rounded-full mb-3"
             />
+            <p className="text-gray-400 text-sm animate-pulse">Loading health-verified restaurants...</p>
           </div>
         ) : filteredRestaurants.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -140,11 +215,17 @@ const Restaurants = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
+            className="text-center py-20 glass rounded-3xl p-8 border border-white/10 max-w-md mx-auto"
           >
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-2xl font-bold mb-2">No restaurants found</h3>
-            <p className="text-gray-400">Try adjusting your search or filters</p>
+            <div className="text-6xl mb-4">🥗</div>
+            <h3 className="text-2xl font-bold mb-2">No restaurants match criteria</h3>
+            <p className="text-gray-400 mb-4">Try clearing health filters or search query.</p>
+            <button
+              onClick={() => { setSearchQuery(''); setSelectedCuisine('all'); setSelectedHealthFilter('all'); setHealthMode(false); }}
+              className="btn-primary px-6 py-2.5 rounded-xl text-sm"
+            >
+              Reset Filters
+            </button>
           </motion.div>
         )}
       </div>

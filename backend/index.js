@@ -10,6 +10,7 @@ import userRouter from "./routes/user.routes.js"
 import itemRouter from "./routes/item.routes.js"
 import shopRouter from "./routes/shop.routes.js"
 import orderRouter from "./routes/order.routes.js"
+import aiRouter from "./routes/ai.routes.js"
 import http from "http"
 import { Server } from "socket.io"
 import { socketHandler } from "./socket.js"
@@ -39,8 +40,10 @@ app.use(cookieParser())
 app.use("/api/auth",authRouter)
 app.use("/api/user",userRouter)
 app.use("/api/shop",shopRouter)
+app.use("/api/restaurants",shopRouter)
 app.use("/api/item",itemRouter)
 app.use("/api/order",orderRouter)
+app.use("/api/ai",aiRouter)
 
 socketHandler(io)
 server.listen(port,()=>{

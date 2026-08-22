@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema({
    location:{
 type:{type:String,enum:['Point'],default:'Point'},
 coordinates:{type:[Number],default:[0,0]}
+   },
+   healthProfile: {
+     dietaryRestrictions: [{ type: String }],
+     medicalConditions: [{ type: String }],
+     calorieGoal: { type: Number, default: 2000 }
    }
   
 }, { timestamps: true })
