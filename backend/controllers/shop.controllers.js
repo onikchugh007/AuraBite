@@ -3,6 +3,22 @@ import Item from "../models/item.model.js";
 import User from "../models/user.model.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 
+// Helper for distance calculation (Haversine formula in KM)
+const haversineDistance = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 0
+  const R = 6371 // Earth radius in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180)
+  const dLon = (lon2 - lon1) * (Math.PI / 180)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return parseFloat((R * c).toFixed(2))
+}
+
 // Helper to ensure shop has menu items populated with dietary and nutritional info
 export const ensureShopItems = async (shop) => {
   if (!shop) return shop
@@ -163,6 +179,69 @@ export const seedSampleShops = async () => {
   } catch (error) {
     console.error('Seed error:', error)
     return []
+  }
+}
+
+export const getNearbyShops = async (req, res) => {
+  try {
+    const lat = Number(req.query.lat || req.query.latitude || req.query.userLat) || 25.4358
+    const lng = Number(req.query.lng || req.query.longitude || req.query.userLng) || 78.5684
+    const maxDistanceKm = Number(req.query.maxDistanceKm || req.query.radius || req.query.maxDistance) || 25
+    const searchQuery = String(req.query.search || req.query.query || req.query.name || '').trim().toLowerCase()
+
+    let shops = await Shop.find().populate('items owner')
+    if (!shops || shops.length === 0) {
+      shops = await seedSampleShops()
+    }
+
+    const processedShops = []
+
+    for (let shop of shops) {
+      shop = await ensureShopItems(shop)
+      const shopObj = shop.toObject ? shop.toObject() : shop
+
+      const shopLng = shopObj.location?.coordinates?.[0] || (lng - 0.012)
+      const shopLat = shopObj.location?.coordinates?.[1] || (lat + 0.015)
+
+      const distanceKm = haversineDistance(lat, lng, shopLat, shopLng)
+
+      const itemsList = shopObj.items || []
+      const matchingItems = searchQuery
+        ? itemsList.filter(item =>
+            item.name?.toLowerCase().includes(searchQuery) ||
+            item.category?.toLowerCase().includes(searchQuery) ||
+            item.dietaryTags?.some(t => t.toLowerCase().includes(searchQuery))
+          )
+        : itemsList
+
+      const isShopNameMatch = shopObj.name?.toLowerCase().includes(searchQuery) ||
+                              shopObj.city?.toLowerCase().includes(searchQuery) ||
+                              shopObj.address?.toLowerCase().includes(searchQuery)
+
+      if (distanceKm <= maxDistanceKm && (!searchQuery || isShopNameMatch || matchingItems.length > 0)) {
+        processedShops.push({
+          ...shopObj,
+          distanceKm,
+          estimatedDeliveryMinutes: Math.max(15, Math.ceil(distanceKm * 4 + 10)),
+          productsCount: itemsList.length,
+          matchingProducts: matchingItems
+        })
+      }
+    }
+
+    processedShops.sort((a, b) => a.distanceKm - b.distanceKm)
+
+    return res.status(200).json({
+      success: true,
+      userLocation: { latitude: lat, longitude: lng },
+      radiusKm: maxDistanceKm,
+      searchQuery: searchQuery || null,
+      count: processedShops.length,
+      restaurants: processedShops
+    })
+  } catch (error) {
+    console.error('getNearbyShops error:', error)
+    return res.status(500).json({ success: false, message: `Failed to fetch nearby restaurants: ${error.message}` })
   }
 }
 

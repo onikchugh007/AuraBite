@@ -1,10 +1,12 @@
 import express from "express"
-import { createEditShop, getAllShops, getMyShop, getShopByCity, getShopById } from "../controllers/shop.controllers.js"
+import { createEditShop, getAllShops, getMyShop, getShopByCity, getShopById, getNearbyShops } from "../controllers/shop.controllers.js"
 import isAuth from "../middlewares/isAuth.js"
 import { upload } from "../middlewares/multer.js"
 
 const shopRouter = express.Router()
 
+shopRouter.get("/nearby", getNearbyShops)
+shopRouter.get("/search-nearby", getNearbyShops)
 shopRouter.get("/all", getAllShops)
 shopRouter.get("/", getAllShops)
 shopRouter.post("/create-edit", isAuth, upload.single("image"), createEditShop)
