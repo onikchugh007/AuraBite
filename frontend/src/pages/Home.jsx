@@ -48,6 +48,9 @@ function Hero() {
   );
 }
 
+
+
+
 function Categories() {
   const categories = [
     { name: 'North Indian', img: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200&h=200&fit=crop' },
@@ -328,6 +331,7 @@ const Home = () => {
       <DownloadApp />
     </motion.div>
   );
-}
+};
 
 export default Home;
+

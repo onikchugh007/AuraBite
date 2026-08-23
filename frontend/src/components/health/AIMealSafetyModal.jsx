@@ -8,7 +8,7 @@ import {
 import axios from 'axios'
 
 const AIMealSafetyModal = ({ item, onClose }) => {
-  const [selectedConditions, setSelectedConditions] = useState(['diabetes', 'hypertension'])
+  const [selectedConditions, setSelectedConditions] = useState([])
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
 
@@ -80,11 +80,11 @@ const AIMealSafetyModal = ({ item, onClose }) => {
         {/* Header */}
         <div className="flex items-center gap-3 mb-6 pr-10">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-2xl shadow-lg border border-white/20 shrink-0">
-            🤖
+            🥗
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2 text-white">
-              AuraHealth AI Safety Checker
+              Full Nutrient & Health Check
             </h2>
             <p className="text-xs sm:text-sm text-gray-400">
               Evaluating <span className="text-orange-400 font-bold">{item?.name}</span> for your medical needs
@@ -198,7 +198,7 @@ const AIMealSafetyModal = ({ item, onClose }) => {
             {/* AI Medical Recommendation */}
             <div className="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-2">
               <h4 className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
-                <FiActivity className="w-4 h-4" /> AI Nutritionist Recommendation:
+                <FiActivity className="w-4 h-4" /> Nutritional & Health Advice:
               </h4>
               <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-medium">
                 "{result.aiRecommendation}"

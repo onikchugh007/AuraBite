@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../common/Icons';
-import { FiUser, FiPackage, FiLogOut, FiChevronDown, FiShield, FiHeart } from 'react-icons/fi';
+import { FiUser, FiPackage, FiLogOut, FiChevronDown, FiShield, FiHeart, FiZap } from 'react-icons/fi';
 import axios from 'axios';
 
 const Navbar = () => {
@@ -113,6 +113,19 @@ const Navbar = () => {
             <ul className="nav-links">
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/restaurants">Restaurants</Link></li>
+
+                {/* AI Voice Assistant Trigger Button */}
+                <li>
+                    <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-voice-assist'))}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white border border-orange-500/40 hover:border-orange-500 transition-all text-xs font-bold shadow-sm cursor-pointer group"
+                        title="Aura AI Voice Assist"
+                    >
+                        <FiZap className="w-3.5 h-3.5 text-orange-400 group-hover:text-white group-hover:scale-110 transition-transform" />
+                        <span>AI Voice</span>
+                    </button>
+                </li>
 
                 {/* Cart Icon */}
                 <li>
