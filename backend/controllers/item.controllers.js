@@ -2,6 +2,20 @@ import Item from "../models/item.model.js";
 import Shop from "../models/shop.model.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 
+export const getAllItems = async (req, res) => {
+  try {
+    let items = await Item.find().populate('shop', 'name image address city')
+    if (!items || items.length === 0) {
+      const { seedRealRestaurants } = await import("./shop.controllers.js")
+      await seedRealRestaurants()
+      items = await Item.find().populate('shop', 'name image address city')
+    }
+    return res.status(200).json(items)
+  } catch (error) {
+    return res.status(500).json({ message: `get all items error ${error}` })
+  }
+}
+
 export const addItem = async (req, res) => {
     try {
         const { name, category, foodType, price } = req.body
@@ -92,23 +106,10 @@ export const deleteItem = async (req, res) => {
 
 export const getItemByCity = async (req, res) => {
     try {
-        const { city } = req.params
-        if (!city) {
-            return res.status(400).json({ message: "city is required" })
-        }
-        const shops = await Shop.find({
-            city: { $regex: new RegExp(`^${city}$`, "i") }
-        }).populate('items')
-        if (!shops) {
-            return res.status(400).json({ message: "shops not found" })
-        }
-        const shopIds=shops.map((shop)=>shop._id)
-
-        const items=await Item.find({shop:{$in:shopIds}})
+        let items = await Item.find().populate('shop', 'name image address city')
         return res.status(200).json(items)
-
     } catch (error) {
- return res.status(500).json({ message: `get item by city error ${error}` })
+        return res.status(500).json({ message: `get item by city error ${error}` })
     }
 }
 
@@ -135,32 +136,18 @@ export const getItemsByShop = async (req, res) => {
 export const searchItems=async (req,res) => {
     try {
         const {query,city}=req.query
-        if(!query || !city){
-            return null
-        }
-        const shops=await Shop.find({
-            city:{$regex:new RegExp(`^${city}$`, "i")}
-        }).populate('items')
-        if(!shops){
-            return res.status(400).json({message:"shops not found"})
-        }
-        const shopIds=shops.map(s=>s._id)
-        const items=await Item.find({
-            shop:{$in:shopIds},
+        let items = await Item.find({
             $or:[
-              {name:{$regex:query,$options:"i"}},
-              {category:{$regex:query,$options:"i"}}  
+              {name:{$regex: query || '', $options:"i"}},
+              {category:{$regex: query || '', $options:"i"}}  
             ]
-
-        }).populate("shop","name image")
+        }).populate("shop","name image address city")
 
         return res.status(200).json(items)
-
     } catch (error) {
-         return res.status(500).json({ message: `search item  error ${error}` })
+         return res.status(500).json({ message: `search item error ${error}` })
     }
 }
-
 
 export const rating=async (req,res) => {
     try {
@@ -185,7 +172,7 @@ export const rating=async (req,res) => {
         item.rating.count=newCount
         item.rating.average=newAverage
         await item.save()
-return res.status(200).json({rating:item.rating})
+        return res.status(200).json({rating:item.rating})
 
     } catch (error) {
          return res.status(500).json({ message: `rating error ${error}` })

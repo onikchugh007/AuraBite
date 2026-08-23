@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiStar, FiClock, FiMapPin, FiPhone, FiArrowLeft } from 'react-icons/fi'
+import { FiStar, FiClock, FiMapPin, FiPhone, FiArrowLeft, FiTruck } from 'react-icons/fi'
 import FoodItemCard from '../components/menu/FoodItemCard'
 import axios from 'axios'
 
@@ -66,13 +66,13 @@ const RestaurantDetail = () => {
               alt={restaurant.name}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent" />
 
             {/* Back Button */}
             <div className="absolute top-6 left-6 z-10">
               <Link
                 to="/restaurants"
-                className="p-3 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md flex items-center gap-2 text-sm font-medium transition-colors"
+                className="p-3 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md flex items-center gap-2 text-sm font-medium transition-colors border border-white/10"
               >
                 <FiArrowLeft className="w-5 h-5" />
                 Back to Restaurants
@@ -86,19 +86,22 @@ const RestaurantDetail = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <h1 className="text-3xl sm:text-5xl font-bold mb-3">{restaurant.name}</h1>
-                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-200">
+                  <h1 className="text-3xl sm:text-5xl font-extrabold mb-3 text-white">{restaurant.name}</h1>
+                  <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-200">
                     <div className="flex items-center gap-1.5 bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30">
                       <FiStar className="w-4 h-4 fill-current text-amber-400" />
-                      <span className="font-bold">{restaurant.rating || '4.8'}</span>
+                      <span className="font-bold">{typeof restaurant.rating === 'object' ? (restaurant.rating?.average || '4.8') : (restaurant.rating || '4.8')}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1.5 bg-orange-500/30 text-orange-200 px-3 py-1 rounded-full border border-orange-500/40 font-semibold">
+                      <span>🍳 Prep Time: {restaurant.prepTime || '15-20'} mins</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/10">
                       <FiClock className="w-4 h-4 text-orange-400" />
-                      <span>{restaurant.deliveryTime || '25-35'} min</span>
+                      <span>Delivery: {restaurant.deliveryTime || '25-35'} mins</span>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/10">
                       <FiMapPin className="w-4 h-4 text-orange-400" />
-                      <span>{restaurant.city || 'Downtown'}, {restaurant.state || 'NY'}</span>
+                      <span>{restaurant.address || 'Nagra Main Road'}, {restaurant.city || 'Jhansi'}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -115,13 +118,13 @@ const RestaurantDetail = () => {
                 className="glass rounded-2xl p-6 md:col-span-2 border border-white/10"
               >
                 <h2 className="text-xl font-bold mb-3">About Restaurant</h2>
-                <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                  {restaurant.address ? `${restaurant.name} located at ${restaurant.address}.` : 'Serving authentic delicious gourmet meals with fresh ingredients.'}
+                <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                  {restaurant.name} located at <span className="font-semibold text-white">{restaurant.address || 'Nagra Main Road'}, {restaurant.city || 'Jhansi'}</span>. Freshly preparing gourmet & health-focused meals in 15-20 minutes.
                 </p>
 
-                <h3 className="font-bold text-sm mb-2 text-gray-300">Specialties</h3>
+                <h3 className="font-bold text-sm mb-2 text-gray-300">Restaurant Highlights</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['Gourmet Food', 'Fresh Ingredients', 'Fast Delivery'].map((c) => (
+                  {['🍳 15-min Kitchen Prep', '🌿 Fresh Local Ingredients', '⚡ Fast Express Delivery'].map((c) => (
                     <span key={c} className="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-semibold border border-orange-500/30">
                       {c}
                     </span>
@@ -133,17 +136,21 @@ const RestaurantDetail = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="glass rounded-2xl p-6 border border-white/10"
+                className="glass rounded-2xl p-6 border border-white/10 space-y-4"
               >
-                <h3 className="font-bold text-base mb-4">Location & Contact</h3>
+                <h3 className="font-bold text-base">Location & Order Info</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3">
                     <FiPhone className="w-5 h-5 text-orange-500 shrink-0" />
-                    <span>+1 (555) 234-5678</span>
+                    <span>+91 98765 43210</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <FiMapPin className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
-                    <span className="text-gray-300">{restaurant.address || '124 Gourmet Boulevard'}</span>
+                    <span className="text-gray-200">{restaurant.address || 'Nagra Main Road'}, {restaurant.city || 'Jhansi'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-amber-400 font-semibold pt-1 border-t border-white/10">
+                    <FiClock className="w-5 h-5 shrink-0" />
+                    <span>Kitchen Prep Time: 15-20 mins</span>
                   </div>
                 </div>
               </motion.div>
@@ -158,7 +165,7 @@ const RestaurantDetail = () => {
                     key={cat}
                     whileHover={{ scale: 1.05 }}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat
                         ? 'btn-primary'
                         : 'glass hover:bg-white/10'
                       }`}
