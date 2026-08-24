@@ -67,7 +67,7 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort()
-        } catch (e) {}
+        } catch (e) { }
       }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel()
@@ -82,7 +82,7 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
       const utterance = new SpeechSynthesisUtterance(aiSpeechText)
       utterance.rate = 1.0
       utterance.pitch = 1.0
-      
+
       utterance.onstart = () => setIsSpeaking(true)
       utterance.onend = () => setIsSpeaking(false)
       utterance.onerror = () => setIsSpeaking(false)
@@ -198,11 +198,10 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
                 }
                 setIsMuted(!isMuted)
               }}
-              className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${
-                isMuted
+              className={`p-2.5 rounded-xl border transition-colors cursor-pointer ${isMuted
                   ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
                   : 'bg-white/10 text-gray-200 border-white/10 hover:bg-white/20'
-              }`}
+                }`}
               title={isMuted ? 'Unmute AI Voice' : 'Mute AI Voice'}
             >
               {isMuted ? <FiVolumeX className="w-4 h-4" /> : <FiVolume2 className="w-4 h-4" />}
@@ -230,15 +229,14 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
               opacity: isListening ? [0.6, 0.9, 0.6] : [0.3, 0.5, 0.3]
             }}
             transition={{ repeat: Infinity, duration: isListening ? 1.5 : 3, ease: 'easeInOut' }}
-            className={`absolute w-44 h-44 rounded-full blur-2xl ${
-              isListening
+            className={`absolute w-44 h-44 rounded-full blur-2xl ${isListening
                 ? 'bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600'
                 : isThinking
-                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500'
-                : isSpeaking
-                ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500'
-                : 'bg-gradient-to-r from-purple-600/40 via-indigo-600/40 to-cyan-600/40'
-            }`}
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500'
+                  : isSpeaking
+                    ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500'
+                    : 'bg-gradient-to-r from-purple-600/40 via-indigo-600/40 to-cyan-600/40'
+              }`}
           />
 
           {/* Rotating Holographic Glass Orb */}
@@ -256,7 +254,7 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
             <div className="w-full h-full rounded-full bg-[#0a0a0f] flex items-center justify-center overflow-hidden relative">
               {/* Internal Fluid Shimmer Layer */}
               <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-purple-500/30 to-rose-500/20 blur-md animate-pulse" />
-              
+
               {/* Dynamic Icon inside Orb */}
               <div className="relative z-10 text-white text-3xl">
                 {isThinking ? (
@@ -293,12 +291,12 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
               {isListening
                 ? "Go ahead, I'm listening..."
                 : isThinking
-                ? "Analyzing food menu & finding recommendations..."
-                : isSpeaking
-                ? "Aura AI is speaking..."
-                : aiSpeechText
-                ? aiSpeechText
-                : "Tap microphone or type your craving below"}
+                  ? "Analyzing food menu & finding recommendations..."
+                  : isSpeaking
+                    ? "Aura AI is speaking..."
+                    : aiSpeechText
+                      ? aiSpeechText
+                      : "Tap microphone or type your craving below"}
             </p>
 
             {transcript && !aiSpeechText && (
@@ -353,11 +351,10 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={toggleListening}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer shadow-lg shrink-0 ${
-                isListening
+              className={`p-3 rounded-2xl border transition-all cursor-pointer shadow-lg shrink-0 ${isListening
                   ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white border-red-400 animate-pulse'
                   : 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-cyan-400/40 hover:opacity-90'
-              }`}
+                }`}
               title={isListening ? 'Stop Listening' : 'Start Listening'}
             >
               {isListening ? <FiMicOff className="w-5 h-5" /> : <FiMic className="w-5 h-5" />}
@@ -426,7 +423,7 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
                         <h4 className="text-sm font-bold text-white truncate group-hover:text-cyan-400 transition-colors">{item.name}</h4>
                       </div>
                       <p className="text-xs text-gray-400 truncate">{item.shop?.name || 'AuraBite Special'}</p>
-                      
+
                       <div className="flex items-center justify-between mt-1.5">
                         <span className="text-sm font-extrabold text-orange-400">₹{item.price}</span>
                         <div className="flex items-center gap-1 text-[11px] text-amber-400 font-semibold">
@@ -439,11 +436,10 @@ const AuraVoiceAssistModal = ({ isOpen, onClose }) => {
                     {/* Quick Add Button */}
                     <button
                       onClick={(e) => handleAddToCart(item, e)}
-                      className={`p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 shadow-md ${
-                        isAdded
+                      className={`p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 shadow-md ${isAdded
                           ? 'bg-emerald-500 text-white'
                           : 'bg-orange-500 hover:bg-orange-600 text-white'
-                      }`}
+                        }`}
                       title="Add to Cart"
                     >
                       {isAdded ? <FiCheck className="w-4 h-4" /> : <FiShoppingBag className="w-4 h-4" />}
