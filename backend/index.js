@@ -30,24 +30,48 @@ app.set("io",io)
 
 
 
-const port=process.env.PORT || 5000
+const port = process.env.PORT || 5000
+
+// Dynamic CORS configuration
 app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true
+    origin: (origin, callback) => callback(null, true),
+    credentials: true
 }))
+
 app.use(express.json())
 app.use(cookieParser())
-app.use("/api/auth",authRouter)
-app.use("/api/user",userRouter)
-app.use("/api/shop",shopRouter)
-app.use("/api/restaurants",shopRouter)
-app.use("/api/item",itemRouter)
-app.use("/api/order",orderRouter)
-app.use("/api/ai",aiRouter)
+
+// Ensure Database Connection for serverless environments
+app.use(async (req, res, next) => {
+    try {
+        await connectDb()
+    } catch (err) {
+        console.error("DB Connection error:", err)
+    }
+    next()
+})
+
+app.get("/", (req, res) => {
+    res.json({ message: "Vingo API is running smoothly!" })
+})
+
+app.use("/api/auth", authRouter)
+app.use("/api/user", userRouter)
+app.use("/api/shop", shopRouter)
+app.use("/api/restaurants", shopRouter)
+app.use("/api/item", itemRouter)
+app.use("/api/order", orderRouter)
+app.use("/api/ai", aiRouter)
 
 socketHandler(io)
-server.listen(port,()=>{
-    connectDb()
-    console.log(`server started at ${port}`)
-})
+
+if (!process.env.VERCEL) {
+    server.listen(port, () => {
+        connectDb()
+        console.log(`server started at ${port}`)
+    })
+}
+
+export default app
+
 
